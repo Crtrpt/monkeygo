@@ -12,6 +12,7 @@ const (
 	EOF     = "EPF"
 	IDENT   = "IDENT"
 	INT     = "INT"
+	STRING  = "STRING"
 
 	// Operators
 	ASSIGN   = "="
