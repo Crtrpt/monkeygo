@@ -15,3 +15,10 @@ writing an interpreter in go
 -  strings
 -  arrays
 -  hashes
+
+
+## 如何运行
+```
+go run main.go
+```
+语法参考 测试用例 和源码
