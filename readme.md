@@ -7,3 +7,11 @@
 writing an interpreter in go
 
 [![Go](https://github.com/Crtrpt/monkeygo/actions/workflows/go.yml/badge.svg)](https://github.com/Crtrpt/monkeygo/actions/workflows/go.yml)
+
+
+### 支持的数据类型
+-  integers
+-  booleans
+-  strings
+-  arrays
+-  hashes
