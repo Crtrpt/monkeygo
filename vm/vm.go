@@ -10,10 +10,13 @@ import (
 const StackSize = 2048
 
 type VM struct {
-	constants    []object.Object
+	//常量
+	constants []object.Object
+	//指令
 	instructions code.Instructions
-	stack        []object.Object
-	sp           int // Always points to the next value. Top of stack is stack[sp-1]
+	//栈
+	stack []object.Object
+	sp    int // Always points to the next value. Top of stack is stack[sp-1]
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
@@ -63,7 +66,7 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpLessThan:
 			err := vm.executeComparison(op)
 			if err != nil {
 				return err
@@ -171,8 +174,10 @@ func (vm *VM) executeIntegerComparison(
 		return vm.push(nativeBoolToBooleanObject(rightValue != leftValue))
 	case code.OpGreaterThan:
 		return vm.push(nativeBoolToBooleanObject(leftValue > rightValue))
+	case code.OpLessThan:
+		return vm.push(nativeBoolToBooleanObject(leftValue < rightValue))
 	default:
-		return fmt.Errorf("unknown operator: %d", op)
+		return fmt.Errorf("未知的操作符: %d", op)
 	}
 }
 

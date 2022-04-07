@@ -24,6 +24,7 @@ const (
 	OpEqual
 	OpNotEqual
 	OpGreaterThan
+	OpLessThan
 
 	OpMinus
 	OpBang
@@ -47,6 +48,7 @@ var definitions = map[Opcode]*Definition{
 	OpEqual:       {"OpEqual", []int{}},
 	OpNotEqual:    {"OpNotEqual", []int{}},
 	OpGreaterThan: {"OpGreaterThan", []int{}},
+	OpLessThan:    {"OpLessThan", []int{}},
 
 	OpMinus: {"OpMinus", []int{}},
 	OpBang:  {"OpBang", []int{}},
@@ -60,6 +62,7 @@ func Lookup(op byte) (*Definition, error) {
 	return def, nil
 }
 
+//操作码  操作数
 func Make(op Opcode, operands ...int) []byte {
 	def, ok := definitions[op]
 	if !ok {
@@ -71,6 +74,7 @@ func Make(op Opcode, operands ...int) []byte {
 	}
 	instruction := make([]byte, instructionLen)
 	instruction[0] = byte(op)
+
 	offset := 1
 	for i, o := range operands {
 		width := def.OperandWidths[i]
@@ -103,10 +107,12 @@ func ReadUint16(ins Instructions) uint16 {
 func (ins Instructions) String() string {
 	var out bytes.Buffer
 	i := 0
+
+	// fmt.Printf("指令长度%d \n", len(ins))
 	for i < len(ins) {
 		def, err := Lookup(ins[i])
 		if err != nil {
-			fmt.Fprintf(&out, "ERROR: %s\n", err)
+			fmt.Fprintf(&out, "错误: %s\n", err)
 			continue
 		}
 		operands, read := ReadOperands(def, ins[i+1:])
@@ -129,5 +135,5 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
 	}
-	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
+	return fmt.Sprintf("ERROR: 未处理的操作数长度 for %s\n", def.Name)
 }

@@ -37,23 +37,19 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpPop)
+		//中缀表达式
 	case *ast.InfixExpression:
-		if node.Operator == "<" {
-			err := c.Compile(node.Right)
-			if err != nil {
-				return err
-			}
-			err = c.Compile(node.Left)
-			if err != nil {
-				return err
-			}
-			c.emit(code.OpGreaterThan)
-			return nil
-		}
+		//编译左侧
 		err := c.Compile(node.Left)
 		if err != nil {
 			return err
 		}
+		//编译右侧
+		err = c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
+
 		switch node.Operator {
 		case "+":
 			c.emit(code.OpAdd)
@@ -65,6 +61,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpDiv)
 		case ">":
 			c.emit(code.OpGreaterThan)
+		case "<":
+			c.emit(code.OpLessThan)
 		case "==":
 			c.emit(code.OpEqual)
 		case "!=":
@@ -118,6 +116,7 @@ func (c *Compiler) addConstant(obj object.Object) int {
 
 func (c *Compiler) emit(op code.Opcode, operands ...int) int {
 	ins := code.Make(op, operands...)
+	//增加指令
 	pos := c.addInstruction(ins)
 	return pos
 }

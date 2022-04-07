@@ -1,6 +1,9 @@
 package code
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestMake(t *testing.T) {
 	tests := []struct {
@@ -32,15 +35,16 @@ func TestInstructionsString(t *testing.T) {
 		Make(OpConstant, 65535),
 	}
 	expected := `0000 OpAdd
-0003 OpConstant 2
-0006 OpConstant 65535
+0001 OpConstant 2
+0004 OpConstant 65535
 `
 	concatted := Instructions{}
 	for _, ins := range instructions {
 		concatted = append(concatted, ins...)
 	}
 	if concatted.String() != expected {
-		t.Errorf("instructions wrongly formatted.\nwant=%q\ngot=%q",
+		fmt.Printf(expected)
+		t.Errorf("指令格式错误.\n期待: \n%s\n实际: \n%s",
 			expected, concatted.String())
 	}
 }
