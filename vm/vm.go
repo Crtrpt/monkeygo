@@ -9,6 +9,10 @@ import (
 
 const StackSize = 2048
 
+var Null = &object.Null{}
+
+const GlobalsSize = 65536
+
 type VM struct {
 	//常量
 	constants []object.Object
@@ -17,6 +21,8 @@ type VM struct {
 	//栈
 	stack []object.Object
 	sp    int // Always points to the next value. Top of stack is stack[sp-1]
+	//全局变量
+	globals []object.Object
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
@@ -25,6 +31,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 		constants:    bytecode.Constants,
 		stack:        make([]object.Object, StackSize),
 		sp:           0,
+		globals:      make([]object.Object, GlobalsSize),
 	}
 }
 
@@ -78,6 +85,34 @@ func (vm *VM) Run() error {
 			}
 		case code.OpMinus:
 			err := vm.executeMinusOperator()
+			if err != nil {
+				return err
+			}
+
+		case code.OpJump:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip = pos - 1
+
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			condition := vm.pop()
+			if !isTruthy(condition) {
+				ip = pos - 1
+			}
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
+		case code.OpSetGlobal:
+			globalIndex := code.ReadUint16(vm.instructions[ip+1:])
+			ip += 2
+			vm.globals[globalIndex] = vm.pop()
+		case code.OpGetGlobal:
+			globalIndex := code.ReadUint16(vm.instructions[ip+1:])
+			ip += 2
+			err := vm.push(vm.globals[globalIndex])
 			if err != nil {
 				return err
 			}
@@ -196,6 +231,8 @@ func (vm *VM) executeBangOperator() error {
 		return vm.push(False)
 	case False:
 		return vm.push(True)
+	case Null:
+		return vm.push(True)
 	default:
 		return vm.push(False)
 	}
@@ -208,4 +245,21 @@ func (vm *VM) executeMinusOperator() error {
 	}
 	value := operand.(*object.Integer).Value
 	return vm.push(&object.Integer{Value: -value})
+}
+
+func isTruthy(obj object.Object) bool {
+	switch obj := obj.(type) {
+	case *object.Boolean:
+		return obj.Value
+	case *object.Null:
+		return false
+	default:
+		return true
+	}
+}
+
+func NewWithGlobalsStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
+	vm := New(bytecode)
+	vm.globals = s
+	return vm
 }
