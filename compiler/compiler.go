@@ -19,7 +19,9 @@ func New() *Compiler {
 	}
 }
 
+//编译ast 到 bytecode
 func (c *Compiler) Compile(node ast.Node) error {
+	// fmt.Printf(node.TokenLiteral())
 	switch node := node.(type) {
 	case *ast.Program:
 		for _, s := range node.Statements {
@@ -28,6 +30,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 		}
+		//处理表达式语句
 	case *ast.ExpressionStatement:
 		err := c.Compile(node.Expression)
 		if err != nil {
@@ -69,6 +72,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		default:
 			return fmt.Errorf("未知操作符 %s", node.Operator)
 		}
+		//处理整数
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(integer))

@@ -37,20 +37,27 @@ type vmTestCase struct {
 func runVmTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 	for _, tt := range tests {
+		//解析输入到 ast
 		program := parse(tt.input)
+		//初始化编译器
 		comp := compiler.New()
+		//编译器处理ast
 		err := comp.Compile(program)
+		//处理相应的结果
 		if err != nil {
-			t.Fatalf("compiler error: %s", err)
+			t.Fatalf("编译器错误: %s", err)
 		}
+		//初始化虚拟机
 		vm := New(comp.Bytecode())
+		//虚拟机执行bytecode
 		err = vm.Run()
+
 		if err != nil {
-			t.Fatalf("vm error: %s", err)
+			t.Fatalf("虚拟机错误: %s", err)
 		}
 		// stackElem := vm.StackTop()
 		// testExpectedObject(t, tt.expected, stackElem)
-
+		//弹出最后一个栈元素
 		stackElem := vm.LastPoppedStackElem()
 		testExpectedObject(t, tt.expected, stackElem)
 	}
