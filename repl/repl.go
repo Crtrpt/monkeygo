@@ -6,6 +6,7 @@ import (
 	"io"
 	"monkeygo/compiler"
 	"monkeygo/lexer"
+	"monkeygo/object"
 	"monkeygo/parser"
 	"monkeygo/vm"
 )
@@ -22,6 +23,10 @@ func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
 	// env := object.NewEnvironment()
 	// macroEnv := object.NewEnvironment()
+
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalsSize)
+	symbolTable := compiler.NewSymbolTable()
 	for {
 		fmt.Fprintf(out, PROMPT)
 		scanned := scanner.Scan()
@@ -43,19 +48,24 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 		//编译到bytecode
-		comp := compiler.New()
+		// comp := compiler.New()
+		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
-			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+			fmt.Fprintf(out, "o(╥﹏╥)o 编译错误:\n %s\n", err)
 			continue
 		}
 		//执行bytecode
-		machine := vm.New(comp.Bytecode())
-		err = machine.Run()
-		if err != nil {
-			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
-			continue
-		}
+		// machine := vm.New(comp.Bytecode())
+		// err = machine.Run()
+		// if err != nil {
+		// 	fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+		// 	continue
+		// }
+
+		code := comp.Bytecode()
+		constants = code.Constants
+		machine := vm.NewWithGlobalsStore(code, globals)
 
 		lastPopped := machine.LastPoppedStackElem()
 		io.WriteString(out, lastPopped.Inspect())
