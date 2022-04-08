@@ -122,7 +122,7 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.RETURN:
 		return p.parseReturnStatement()
 	default:
-		fmt.Println(p.curToken.Type)
+		// fmt.Println(p.curToken.Type)
 		return p.parseExpressionStatement()
 	}
 }
