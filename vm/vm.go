@@ -9,6 +9,8 @@ import (
 
 const StackSize = 2048
 
+const MaxFrames = 1024
+
 var Null = &object.Null{}
 
 const GlobalsSize = 65536
@@ -17,21 +19,45 @@ type VM struct {
 	//常量
 	constants []object.Object
 	//指令
-	instructions code.Instructions
+	// instructions code.Instructions
 	//栈
 	stack []object.Object
 	sp    int // Always points to the next value. Top of stack is stack[sp-1]
 	//全局变量
 	globals []object.Object
+
+	frames      []*Frame
+	framesIndex int
+}
+
+//当前帧
+func (vm *VM) currentFrame() *Frame {
+	return vm.frames[vm.framesIndex-1]
+}
+
+func (vm *VM) pushFrame(f *Frame) {
+	vm.frames[vm.framesIndex] = f
+	vm.framesIndex++
+}
+func (vm *VM) popFrame() *Frame {
+	vm.framesIndex--
+	return vm.frames[vm.framesIndex]
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
+
+	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
+	mainFrame := NewFrame(mainFn, 0)
+	frames := make([]*Frame, MaxFrames)
+	frames[0] = mainFrame
+
 	return &VM{
-		instructions: bytecode.Instructions,
-		constants:    bytecode.Constants,
-		stack:        make([]object.Object, StackSize),
-		sp:           0,
-		globals:      make([]object.Object, GlobalsSize),
+		constants:   bytecode.Constants,
+		stack:       make([]object.Object, StackSize),
+		sp:          0,
+		globals:     make([]object.Object, GlobalsSize),
+		frames:      frames,
+		framesIndex: 1,
 	}
 }
 
@@ -40,117 +66,6 @@ func (vm *VM) StackTop() object.Object {
 		return nil
 	}
 	return vm.stack[vm.sp-1]
-}
-
-func (vm *VM) Run() error {
-	for ip := 0; ip < len(vm.instructions); ip++ {
-		op := code.Opcode(vm.instructions[ip])
-		switch op {
-		case code.OpConstant:
-			constIndex := code.ReadUint16(vm.instructions[ip+1:])
-			ip += 2
-			err := vm.push(vm.constants[constIndex])
-			if err != nil {
-				return err
-			}
-		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
-			err := vm.executeBinaryOperation(op)
-			if err != nil {
-				return err
-			}
-
-		case code.OpPop:
-			vm.pop()
-
-		case code.OpTrue:
-			err := vm.push(True)
-			if err != nil {
-				return err
-			}
-
-		case code.OpFalse:
-			err := vm.push(False)
-			if err != nil {
-				return err
-			}
-		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpLessThan:
-			err := vm.executeComparison(op)
-			if err != nil {
-				return err
-			}
-		case code.OpBang:
-			err := vm.executeBangOperator()
-			if err != nil {
-				return err
-			}
-		case code.OpMinus:
-			err := vm.executeMinusOperator()
-			if err != nil {
-				return err
-			}
-
-		case code.OpJump:
-			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
-			ip = pos - 1
-
-		case code.OpJumpNotTruthy:
-			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
-			ip += 2
-			condition := vm.pop()
-			if !isTruthy(condition) {
-				ip = pos - 1
-			}
-		case code.OpNull:
-			err := vm.push(Null)
-			if err != nil {
-				return err
-			}
-		case code.OpSetGlobal:
-			globalIndex := code.ReadUint16(vm.instructions[ip+1:])
-			ip += 2
-			vm.globals[globalIndex] = vm.pop()
-		case code.OpGetGlobal:
-			globalIndex := code.ReadUint16(vm.instructions[ip+1:])
-			ip += 2
-			err := vm.push(vm.globals[globalIndex])
-			if err != nil {
-				return err
-			}
-
-		case code.OpArray:
-			numElements := int(code.ReadUint16(vm.instructions[ip+1:]))
-			ip += 2
-			array := vm.buildArray(vm.sp-numElements, vm.sp)
-			vm.sp = vm.sp - numElements
-			err := vm.push(array)
-			if err != nil {
-				return err
-			}
-
-		case code.OpHash:
-			numElements := int(code.ReadUint16(vm.instructions[ip+1:]))
-			ip += 2
-			hash, err := vm.buildHash(vm.sp-numElements, vm.sp)
-			if err != nil {
-				return err
-			}
-			vm.sp = vm.sp - numElements
-			err = vm.push(hash)
-			if err != nil {
-				return err
-			}
-
-		case code.OpIndex:
-			index := vm.pop()
-			left := vm.pop()
-			err := vm.executeIndexExpression(left, index)
-			if err != nil {
-				return err
-			}
-		}
-
-	}
-	return nil
 }
 
 func (vm *VM) push(o object.Object) error {
@@ -368,4 +283,159 @@ func (vm *VM) executeHashIndex(hash, index object.Object) error {
 		return vm.push(Null)
 	}
 	return vm.push(pair.Value)
+}
+
+func (vm *VM) Run() error {
+	var ip int
+	var ins code.Instructions
+	var op code.Opcode
+	for vm.currentFrame().ip < len(vm.currentFrame().Instructions())-1 {
+		vm.currentFrame().ip++
+		ip = vm.currentFrame().ip
+		ins = vm.currentFrame().Instructions()
+		op = code.Opcode(ins[ip])
+		switch op {
+		case code.OpConstant:
+			constIndex := code.ReadUint16(ins[ip+1:])
+			vm.currentFrame().ip += 2
+			err := vm.push(vm.constants[constIndex])
+			if err != nil {
+				return err
+			}
+		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
+			err := vm.executeBinaryOperation(op)
+			if err != nil {
+				return err
+			}
+
+		case code.OpPop:
+			vm.pop()
+
+		case code.OpTrue:
+			err := vm.push(True)
+			if err != nil {
+				return err
+			}
+
+		case code.OpFalse:
+			err := vm.push(False)
+			if err != nil {
+				return err
+			}
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan, code.OpLessThan:
+			err := vm.executeComparison(op)
+			if err != nil {
+				return err
+			}
+		case code.OpBang:
+			err := vm.executeBangOperator()
+			if err != nil {
+				return err
+			}
+		case code.OpMinus:
+			err := vm.executeMinusOperator()
+			if err != nil {
+				return err
+			}
+
+		case code.OpJump:
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip = pos - 1
+
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip += 2
+			condition := vm.pop()
+			if !isTruthy(condition) {
+				vm.currentFrame().ip = pos - 1
+			}
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
+		case code.OpSetGlobal:
+			globalIndex := code.ReadUint16(ins[ip+1:])
+			vm.currentFrame().ip += 2
+			vm.globals[globalIndex] = vm.pop()
+		case code.OpGetGlobal:
+			globalIndex := code.ReadUint16(ins[ip+1:])
+			vm.currentFrame().ip += 2
+			err := vm.push(vm.globals[globalIndex])
+			if err != nil {
+				return err
+			}
+		case code.OpSetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
+			frame := vm.currentFrame()
+			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
+
+		case code.OpGetLocal:
+			localIndex := code.ReadUint8(ins[ip+1:])
+			vm.currentFrame().ip += 1
+			frame := vm.currentFrame()
+			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
+			if err != nil {
+				return err
+			}
+
+		case code.OpArray:
+			numElements := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip += 2
+			array := vm.buildArray(vm.sp-numElements, vm.sp)
+			vm.sp = vm.sp - numElements
+			err := vm.push(array)
+			if err != nil {
+				return err
+			}
+
+		case code.OpHash:
+			numElements := int(code.ReadUint16(ins[ip+1:]))
+			vm.currentFrame().ip += 2
+			hash, err := vm.buildHash(vm.sp-numElements, vm.sp)
+			if err != nil {
+				return err
+			}
+			vm.sp = vm.sp - numElements
+			err = vm.push(hash)
+			if err != nil {
+				return err
+			}
+
+		case code.OpIndex:
+			index := vm.pop()
+			left := vm.pop()
+			err := vm.executeIndexExpression(left, index)
+			if err != nil {
+				return err
+			}
+		case code.OpCall:
+			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("calling non-function")
+			}
+			frame := NewFrame(fn, vm.sp)
+			vm.pushFrame(frame)
+			vm.sp = frame.basePointer + fn.NumLocals
+		case code.OpReturnValue:
+			returnValue := vm.pop()
+			frame := vm.popFrame()
+			vm.sp = frame.basePointer - 1
+			err := vm.push(returnValue)
+			if err != nil {
+				return err
+			}
+
+		case code.OpReturn:
+			frame := vm.popFrame()
+			vm.sp = frame.basePointer - 1
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+	return nil
 }
