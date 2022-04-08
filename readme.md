@@ -60,6 +60,7 @@ go run main.go
 
 # 有用的资源
 - 8cc -一个很小的c语言编译器 - https://github.com/rui314/8cc
+- chibicc 和8cc 相同的作者 https://github.com/rui314/chibicc
 - GNU Guile 2.2 - https://www.gnu.org/software/guile/download/
 - MoarVM - 一个现代化的perl vm - https://github.com/MoarVM/MoarVM
 - The Lua Programming Language - lua编程语言 - https://www.lua.org/versions.html
