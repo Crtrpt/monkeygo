@@ -1,4 +1,4 @@
-package repl
+package main
 
 import (
 	"bufio"
@@ -8,7 +8,10 @@ import (
 	"monkeygo/lexer"
 	"monkeygo/object"
 	"monkeygo/parser"
+	"monkeygo/repl"
 	"monkeygo/vm"
+	"os"
+	"os/user"
 )
 
 const MONKEY_FACE = `
@@ -90,4 +93,15 @@ func printParserErrors(out io.Writer, errors []string) {
 	for _, msg := range errors {
 		io.WriteString(out, "\t"+msg+"\n")
 	}
+}
+
+func main() {
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("你好,%s 欢迎使用mongkeygo编程语言!\n",
+		user.Username)
+	fmt.Printf("当前环境为vm执行环境 版本:v0.0.1\n")
+	repl.Start(os.Stdin, os.Stdout)
 }
