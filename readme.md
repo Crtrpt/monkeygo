@@ -62,10 +62,11 @@ go run main.go
 - 8cc -一个很小的c语言编译器 - https://github.com/rui314/8cc
 - GNU Guile 2.2 - https://www.gnu.org/software/guile/download/
 - MoarVM - 一个现代化的perl vm - https://github.com/MoarVM/MoarVM
-The Lua Programming Language - lua编程语言 - https://www.lua.org/versions.html
-The Ruby Programming Language - ruby编程语言 https://github.com/ruby/ruby
-wren - wren 编程语言 https://github.com/wren-lang/wren
-c4 - C in four functions - https://github.com/rswier/c4
-tcc - Tiny C Compiler - https://github.com/LuaDist/tcc
-antlr - 解析器生成器 - git@github.com:antlr/antlr4.git
-Lezer - CodeMirror使用的解析器系统    https://lezer.codemirror.net/ 
+- The Lua Programming Language - lua编程语言 - https://www.lua.org/versions.html
+- The Ruby Programming Language - ruby编程语言 https://github.com/ruby/ruby
+- wren - wren 编程语言 https://github.com/wren-lang/wren
+- c4 - C in four functions - https://github.com/rswier/c4
+- tcc - Tiny C Compiler - https://github.com/LuaDist/tcc
+- antlr - 解析器生成器 - https://github.com/antlr/antlr4
+- Lezer - CodeMirror使用的解析器系统    https://lezer.codemirror.net/ 
+- quickjs - javascript 解析器 https://github.com/bellard/quickjs
