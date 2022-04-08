@@ -1,4 +1,4 @@
-# 一个顺手的编程语言
+# a handy language
 ```
   ___              ___
  (o o)            (o o)
