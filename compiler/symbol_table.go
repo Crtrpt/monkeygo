@@ -6,6 +6,7 @@ const (
 	LocalScope   SymbolScope = "LOCAL"
 	GlobalScope  SymbolScope = "GLOBAL"
 	BuiltinScope SymbolScope = "BUILTIN"
+	FreeScope    SymbolScope = "FREE"
 )
 
 type Symbol struct {
