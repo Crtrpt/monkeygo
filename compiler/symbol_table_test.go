@@ -281,3 +281,18 @@ func TestResolveUnresolvableFree(t *testing.T) {
 		}
 	}
 }
+
+func TestShadowingFunctionName(t *testing.T) {
+	global := NewSymbolTable()
+	global.DefineFunctionName("a")
+	global.Define("a")
+	expected := Symbol{Name: "a", Scope: GlobalScope, Index: 0}
+	result, ok := global.Resolve(expected.Name)
+	if !ok {
+		t.Fatalf("function name %s not resolvable", expected.Name)
+	}
+	if result != expected {
+		t.Errorf("expected %s to resolve to %+v, got=%+v",
+			expected.Name, expected, result)
+	}
+}
