@@ -523,15 +523,15 @@ func TestCallingFunctionsWithWrongArguments(t *testing.T) {
 	tests := []vmTestCase{
 		{
 			input:    `fn() { 1; }(1);`,
-			expected: `wrong number of arguments: want=0, got=1`,
+			expected: `参数数量错误: want=0, got=1`,
 		},
 		{
 			input:    `fn(a) { a; }();`,
-			expected: `wrong number of arguments: want=1, got=0`,
+			expected: `参数数量错误: want=1, got=0`,
 		},
 		{
 			input:    `fn(a, b) { a + b; }(1);`,
-			expected: `wrong number of arguments: want=2, got=1`,
+			expected: `参数数量错误: want=2, got=1`,
 		},
 	}
 	for _, tt := range tests {
@@ -547,7 +547,7 @@ func TestCallingFunctionsWithWrongArguments(t *testing.T) {
 			t.Fatalf("expected VM error but resulted in none.")
 		}
 		if err.Error() != tt.expected {
-			t.Fatalf("wrong VM error: want=%q, got=%q", tt.expected, err)
+			t.Fatalf("参数数量错误: want=%q, got=%q", tt.expected, err)
 		}
 	}
 }
