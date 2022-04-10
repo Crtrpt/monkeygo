@@ -93,3 +93,6 @@ engine=nodejs, result=9227465, duration=0.06599998474121094
 - antlr - 解析器生成器 - https://github.com/antlr/antlr4
 - Lezer - CodeMirror使用的解析器系统    https://lezer.codemirror.net/ 
 - quickjs - javascript 解析器 https://github.com/bellard/quickjs
+- jit-tutorial 实现一个jit https://github.com/spencertipping/jit-tutorial
+- llvm llvm https://llvm.org/
+- asm  asm https://asm.ow2.io/
