@@ -53,6 +53,18 @@ go run main.go
 语法参考 测试用例 和源码
 
 
+## 性能测试
+```
+go  build -o fib.exe  ./benchmark
+
+fib.exe -engine=eval
+
+engine=eval, result=9227465, duration=25.4982916s
+
+fib.exe -engine=vm
+
+engine=vm, result=9227465, duration=8.8899446s
+```
 ## 需要做的
 - 文档
 - 包管理
