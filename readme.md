@@ -68,10 +68,10 @@ engine=vm, result=9227465, duration=8.8899446s
 
 ## 对比其他语言
 ```
-engine=vm, result=9227465, duration=8.8696029s
-engine=eval, result=9227465, duration=25.0417529s
-engine=python, result=9227465, duration=1.9859333038330078
-engine=nodejs, result=9227465, duration=0
+engine=vm, result=9227465, duration=8.8550264s
+engine=eval, result=9227465, duration=25.0208868s
+engine=python, result=9227465, duration=1.943023920059204
+engine=nodejs, result=9227465, duration=0.06599998474121094
 ```
 差距很明显
 
