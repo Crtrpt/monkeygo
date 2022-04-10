@@ -15,14 +15,15 @@ import (
 var engine = flag.String("engine", "vm", "use 'vm' or 'eval'")
 var input = `
 let fibonacci = fn(x) {
-if (x == 0) {
-0
-} else {
-if (x == 1) {
-return 1;
-} else {
-fibonacci(x - 1) + fibonacci(x - 2);
-} }
+	if (x == 0) {
+		0
+	} else {
+		if (x == 1) {
+			return 1;
+		} else {
+			fibonacci(x - 1) + fibonacci(x - 2);
+		} 
+	}
 };
 fibonacci(35);
 `
@@ -42,6 +43,7 @@ func main() {
 			return
 		}
 		machine := vm.New(comp.Bytecode())
+		//解析完成开始计算
 		start := time.Now()
 		err = machine.Run()
 		if err != nil {
