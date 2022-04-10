@@ -261,7 +261,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 			NumParameters: len(node.Parameters),
 		}
 		// compiledFn := &object.CompiledFunction{Instructions: instructions}
-		c.emit(code.OpConstant, c.addConstant(compiledFn))
+		// c.emit(code.OpConstant, c.addConstant(compiledFn))
+
+		fnIndex := c.addConstant(compiledFn)
+		c.emit(code.OpClosure, fnIndex, 0)
 	//函数调用
 	case *ast.CallExpression:
 		err := c.Compile(node.Function)
