@@ -14,8 +14,8 @@ let fib = (n) => {
 
  
 
-start = Math.floor(Date.now()/1000);
+start = Date.now() / 1000;
 res = fib(35);
-end = Math.floor(Date.now()/1000);
+end = Date.now() / 1000;
 engine = "nodejs"
 console.log(`engine=${engine}, result=${res}, duration=${end-start}`)
