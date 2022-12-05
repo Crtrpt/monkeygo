@@ -76,6 +76,8 @@ engine=nodejs, result=9227465, duration=0.06599998474121094
 差距很明显
 
 ## 需要做的
+- 抄袭golang 三色标记 gc
+- 学习 llvm 增加 aot 和jit模式
 - 文档
 - 包管理
 
